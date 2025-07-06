@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react'
-// @ts-expect-error - no declaration file
-import { calcAPCA } from 'apca-w3/src/apca-w3.js'
-// @ts-expect-error - no declaration file
-import { colorParsley } from 'colorparsley'
+import { calculateAPCAContrast, calculateWCAGContrast } from './lib/contrast'
 import { useColorStore } from './store/color'
-import ColorSection from './components/ColorSection'
-import ResultsSection from './components/ResultsSection'
-import TextPreview from './components/TextPreview'
-import ComparisonSection from './components/ComparisonSection'
+import { ColorSection } from './components/color-section'
+import { ResultsSection } from './components/results-section'
+import { TextPreview } from './components/text-preview'
+import { ComparisonSection } from './components/comparison-section'
 
 function App() {
   const { textColor, bgColor } = useColorStore()
@@ -15,33 +12,23 @@ function App() {
   const [wcagScore, setWcagScore] = useState(0)
 
   useEffect(() => {
-    try {
-      const score = calcAPCA(textColor, bgColor)
-      setContrastScore(score)
+    const calculateScores = async () => {
+      try {
+        const [apcaScore, wcagRatio] = await Promise.all([
+          calculateAPCAContrast(textColor, bgColor),
+          calculateWCAGContrast(textColor, bgColor)
+        ])
 
-      const textRGB = colorParsley(textColor)
-      const bgRGB = colorParsley(bgColor)
-
-      const getLuminance = (rgb: number[]) => {
-        const [r, g, b] = rgb.map(c => {
-          c = c / 255
-          return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
-        })
-        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+        setContrastScore(apcaScore)
+        setWcagScore(wcagRatio)
+      } catch (error) {
+        console.error('Error calculating contrast:', error)
+        setContrastScore(0)
+        setWcagScore(0)
       }
-
-      const textLum = getLuminance(textRGB)
-      const bgLum = getLuminance(bgRGB)
-      const lighter = Math.max(textLum, bgLum)
-      const darker = Math.min(textLum, bgLum)
-
-      setWcagScore((lighter + 0.05) / (darker + 0.05))
-
-    } catch (error) {
-      console.error('Error calculating contrast:', error)
-      setContrastScore(0)
-      setWcagScore(0)
     }
+
+    calculateScores()
   }, [textColor, bgColor])
 
   return (

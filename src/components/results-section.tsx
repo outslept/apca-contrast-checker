@@ -1,23 +1,7 @@
+import { getAPCALevel, getContrastDirection } from '../lib/eval'
+
 interface ResultsSectionProps {
   contrastScore: number
-}
-
-interface ScoreStatus {
-  level: string
-  color: string
-}
-
-function getScoreStatus(score: number): ScoreStatus {
-  const absScore = Math.abs(score)
-  if (absScore >= 90) return { level: 'AAA+', color: '#34c759' }
-  if (absScore >= 75) return { level: 'AAA', color: '#007aff' }
-  if (absScore >= 60) return { level: 'AA+', color: '#ff9f0a' }
-  if (absScore >= 45) return { level: 'AA', color: '#ff9500' }
-  return { level: 'FAIL', color: '#ff3b30' }
-}
-
-function getContrastDirection(score: number): string {
-  return score > 0 ? 'Dark on light' : 'Light on dark'
 }
 
 function ScoreVisualization({ score, color }: { score: number; color: string }) {
@@ -40,7 +24,7 @@ function ScoreVisualization({ score, color }: { score: number; color: string }) 
 }
 
 function ResultsSection({ contrastScore }: ResultsSectionProps) {
-  const { level, color } = getScoreStatus(contrastScore)
+  const { level, color } = getAPCALevel(contrastScore)
 
   return (
     <div className="bg-[#1c1c1e] rounded-3xl p-4 sm:p-6 h-full flex flex-col">
@@ -79,4 +63,4 @@ function ResultsSection({ contrastScore }: ResultsSectionProps) {
   )
 }
 
-export default ResultsSection
+export { ResultsSection }

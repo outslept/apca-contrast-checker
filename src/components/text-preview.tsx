@@ -19,6 +19,8 @@ const defaultText = 'The quick brown fox jumps over the lazy dog. ABCDEFGHIJKLMN
 function TextPreview({ textColor, bgColor, className = '' }: TextPreviewProps) {
   const [customText, setCustomText] = useState(defaultText)
 
+  const resetText = () => setCustomText(defaultText)
+
   return (
     <div className={`bg-[#1c1c1e] rounded-3xl p-6 sm:p-8 ${className}`}>
       <div className="mb-6 sm:mb-8">
@@ -56,7 +58,7 @@ function TextPreview({ textColor, bgColor, className = '' }: TextPreviewProps) {
               Custom Text
             </span>
             <button
-              onClick={() => setCustomText(defaultText)}
+              onClick={resetText}
               className="text-[11px] font-medium px-3 py-1 rounded-lg hover:opacity-80 transition-opacity"
               style={{ color: textColor, backgroundColor: `${textColor}10` }}
             >
@@ -80,4 +82,4 @@ function TextPreview({ textColor, bgColor, className = '' }: TextPreviewProps) {
   )
 }
 
-export default TextPreview
+export { TextPreview }

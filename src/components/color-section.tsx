@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { HexColorPicker } from 'react-colorful'
 import { createPortal } from 'react-dom'
+import { getElementPosition, createClickOutsideHandler } from '../lib/dom'
 import { useColorStore } from '../store/color'
 
 interface ColorInputProps {
@@ -15,47 +16,22 @@ function ColorInput({ label, value, onChange }: ColorInputProps) {
   const pickerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node
-      if (
-        buttonRef.current && !buttonRef.current.contains(target) &&
-        pickerRef.current && !pickerRef.current.contains(target)
-      ) {
-        setShowPicker(false)
-      }
-    }
-
     if (showPicker) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
+      const handler = createClickOutsideHandler(
+        [buttonRef, pickerRef],
+        () => setShowPicker(false)
+      )
+
+      document.addEventListener('mousedown', handler)
+      return () => document.removeEventListener('mousedown', handler)
     }
   }, [showPicker])
 
-  const getPickerPosition = () => {
-    if (!buttonRef.current) return { top: 0, left: 0 }
-
-    const rect = buttonRef.current.getBoundingClientRect()
-    const pickerWidth = 280
-
-    let left = rect.right + 10
-    const top = rect.top
-
-    if (left + pickerWidth > window.innerWidth) {
-      left = rect.left - pickerWidth - 10
-    }
-
-    if (left < 0) {
-      left = (window.innerWidth - pickerWidth) / 2
-    }
-
-    return { top, left }
-  }
-
-  const pickerContent = showPicker && (
+  const pickerContent = showPicker ? (
     <div
       ref={pickerRef}
       className="fixed z-50 p-4 bg-[#2c2c2e] rounded-2xl shadow-2xl"
-      style={getPickerPosition()}
+      style={getElementPosition(buttonRef.current)}
     >
       <HexColorPicker color={value} onChange={onChange} />
       <button
@@ -65,7 +41,7 @@ function ColorInput({ label, value, onChange }: ColorInputProps) {
         Done
       </button>
     </div>
-  )
+  ) : null
 
   return (
     <div>
@@ -90,7 +66,7 @@ function ColorInput({ label, value, onChange }: ColorInputProps) {
         />
       </div>
 
-      {typeof window !== 'undefined' && createPortal(pickerContent, document.body)}
+      {createPortal(pickerContent, document.body)}
     </div>
   )
 }
@@ -113,4 +89,4 @@ function ColorSection() {
   )
 }
 
-export default ColorSection
+export { ColorSection }
